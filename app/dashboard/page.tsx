@@ -65,10 +65,9 @@ export default function DashboardPage() {
             <DashCard title="Completion Dashboard" desc="Track quarterly check-in completion" href="/dashboard/admin/completion" color="gray" />
             <DashCard title="Push Shared Goal" desc="Push a KPI to multiple employees" href="/dashboard/admin/shared" color="purple" />
             <DashCard title="Escalations" desc="View and manage escalation rules" href="/dashboard/admin/escalations" color="gray" />
+            <DashCard title="Audit Trail" desc="View all goal change history" href="/dashboard/admin" color="gray" />
           </>
         )}
-
-        <DashCard title="Audit Trail" desc="View all goal change history" href="/dashboard/admin" color="gray" />
       </div>
     </div>
   )
