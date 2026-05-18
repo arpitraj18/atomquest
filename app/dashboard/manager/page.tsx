@@ -4,6 +4,34 @@ import { useRequireRole } from '@/lib/auth-check'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 
+function RiskBadge({ goalId }: { goalId: string }) {
+  const [data, setData] = useState<any>(null)
+
+  useEffect(() => {
+    fetch('/api/ml/predict?goal_id=' + goalId)
+      .then(r => r.json())
+      .then(setData)
+      .catch(() => {})
+  }, [goalId])
+
+  if (!data || data.risk === 'UNKNOWN') return null
+
+  const colorMap: Record<string, string> = {
+    green: 'bg-green-50 text-green-700 border border-green-200',
+    amber: 'bg-yellow-50 text-yellow-700 border border-yellow-200',
+    red: 'bg-red-50 text-red-700 border border-red-200',
+  }
+
+  return (
+    <span
+      className={'text-xs px-2 py-0.5 rounded-full ' + (colorMap[data.color] || '')}
+      title={data.explanation}
+    >
+      {data.risk} risk
+    </span>
+  )
+}
+
 export default function ManagerPage() {
   const { user, status } = useRequireRole(['manager'])
   const router = useRouter()
@@ -72,7 +100,7 @@ export default function ManagerPage() {
 
   if (status === 'loading' || loading) return (
     <div className="flex items-center justify-center py-32">
-      <p className="text-gray-400">Loading...</p>
+      <p className="text-gray-400 text-sm">Loading...</p>
     </div>
   )
 
@@ -80,41 +108,45 @@ export default function ManagerPage() {
     <div>
       <div className="border-b bg-white px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <button onClick={() => router.push('/dashboard')} className="text-gray-400 hover:text-gray-600 text-sm">
+          <button onClick={() => router.push('/dashboard')} className="text-gray-400 hover:text-gray-600 text-sm transition-colors">
             &larr; Dashboard
           </button>
           <span className="text-gray-300">/</span>
-          <h1 className="text-lg font-semibold">Team Goals</h1>
+          <h1 className="text-base font-semibold text-gray-900">Team Goals</h1>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
           <button onClick={() => router.push('/dashboard/manager/checkin')}
-            className="text-sm text-blue-600 hover:underline">
-            Quarterly check-ins
+            className="text-sm text-[#F97316] hover:text-[#EA6C00] transition-colors">
+            Quarterly check-ins &rarr;
           </button>
-          <span className="text-sm text-gray-500">{goals.length} total goals</span>
+          <button onClick={() => window.location.reload()}
+            className="text-sm text-gray-500 hover:text-gray-700 border border-gray-200 rounded-lg px-3 py-1.5 transition-colors">
+            Refresh
+          </button>
+          <span className="text-sm text-gray-400">{goals.length} goals</span>
         </div>
       </div>
 
       <div className="max-w-5xl mx-auto p-8">
         {Object.keys(grouped).length === 0 ? (
-          <div className="text-center py-16 bg-white border rounded-xl">
-            <p className="text-gray-400">No team goals found.</p>
+          <div className="text-center py-16 bg-white border border-gray-200 rounded-lg">
+            <p className="text-gray-400 text-sm">No team goals found.</p>
           </div>
         ) : (
-          <div className="space-y-8">
+          <div className="space-y-6">
             {Object.values(grouped).map((group: any) => (
-              <div key={group.employee?.id} className="bg-white border rounded-xl overflow-hidden">
-                <div className="px-5 py-4 border-b bg-gray-50 flex items-center justify-between">
+              <div key={group.employee?.id} className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+                <div className="px-5 py-4 border-b border-gray-100 bg-gray-50 flex items-center justify-between">
                   <div>
                     <h2 className="font-medium text-gray-900">{group.employee?.name}</h2>
-                    <p className="text-sm text-gray-500">{group.employee?.department} &middot; {group.employee?.email}</p>
+                    <p className="text-sm text-gray-400 mt-0.5">{group.employee?.department} &middot; {group.employee?.email}</p>
                   </div>
-                  <div className="text-sm text-gray-500">
+                  <div className="text-sm text-gray-400">
                     {group.goals.length} goals &middot; {group.goals.reduce((s: number, g: any) => s + Number(g.weightage), 0)}% total
                   </div>
                 </div>
 
-                <div className="divide-y">
+                <div className="divide-y divide-gray-100">
                   {group.goals.map((goal: any) => {
                     const isEditing = !!editing[goal.id]
                     return (
@@ -122,13 +154,14 @@ export default function ManagerPage() {
                         <div className="flex items-start justify-between mb-3">
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-1">
-                              <span className="text-xs text-gray-400 uppercase">{goal.thrust_area}</span>
+                              <span className="text-xs text-gray-400 uppercase tracking-wide">{goal.thrust_area}</span>
                               <span className={'text-xs px-2 py-0.5 rounded-full ' + statusColor[goal.status]}>
                                 {goal.status}
                               </span>
+                              {goal.status === 'approved' && <RiskBadge goalId={goal.id} />}
                             </div>
                             <h3 className="font-medium text-gray-900">{goal.title}</h3>
-                            <p className="text-sm text-gray-500 mt-1">{goal.description}</p>
+                            <p className="text-sm text-gray-400 mt-1">{goal.description}</p>
                           </div>
                           <div className="text-right ml-4 flex-shrink-0">
                             {isEditing ? (
@@ -137,20 +170,20 @@ export default function ManagerPage() {
                                   <label className="text-xs text-gray-400">Target</label>
                                   <input type="number" value={editing[goal.id].target}
                                     onChange={e => setEditing(prev => ({ ...prev, [goal.id]: { ...prev[goal.id], target: e.target.value } }))}
-                                    className="w-24 border rounded px-2 py-1 text-sm block" />
+                                    className="w-24 border border-gray-200 rounded px-2 py-1 text-sm block" />
                                 </div>
                                 <div>
                                   <label className="text-xs text-gray-400">Weightage %</label>
                                   <input type="number" value={editing[goal.id].weightage}
                                     onChange={e => setEditing(prev => ({ ...prev, [goal.id]: { ...prev[goal.id], weightage: e.target.value } }))}
-                                    className="w-24 border rounded px-2 py-1 text-sm block" />
+                                    className="w-24 border border-gray-200 rounded px-2 py-1 text-sm block" />
                                 </div>
                                 <button onClick={() => setEditing(prev => { const n = { ...prev }; delete n[goal.id]; return n })}
-                                  className="text-xs text-gray-400 hover:text-gray-600">Cancel edit</button>
+                                  className="text-xs text-gray-400 hover:text-gray-600 transition-colors">Cancel edit</button>
                               </div>
                             ) : (
                               <>
-                                <div className="text-lg font-semibold">{goal.weightage}%</div>
+                                <div className="text-lg font-semibold text-gray-900">{goal.weightage}%</div>
                                 <div className="text-xs text-gray-400">Target: {goal.target} ({goal.uom_type})</div>
                               </>
                             )}
@@ -158,9 +191,9 @@ export default function ManagerPage() {
                         </div>
 
                         {goal.status === 'submitted' && (
-                          <div className="mt-3 pt-3 border-t space-y-3">
+                          <div className="mt-3 pt-3 border-t border-gray-100 space-y-3">
                             {!isEditing && (
-                              <button onClick={() => startEdit(goal)} className="text-xs text-blue-600 hover:underline">
+                              <button onClick={() => startEdit(goal)} className="text-xs text-[#F97316] hover:text-[#EA6C00] transition-colors">
                                 Edit target / weightage before approving
                               </button>
                             )}
@@ -168,15 +201,15 @@ export default function ManagerPage() {
                               placeholder="Add comment (optional)..."
                               value={comment[goal.id] || ''}
                               onChange={e => setComment(prev => ({ ...prev, [goal.id]: e.target.value }))}
-                              className="w-full border rounded-lg px-3 py-2 text-sm resize-none" rows={2}
+                              className="w-full border border-gray-200 rounded px-3 py-2 text-sm resize-none" rows={2}
                             />
                             <div className="flex gap-2">
                               <button onClick={() => updateGoal(goal.id, 'approved', comment[goal.id])}
-                                className="bg-green-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-green-700">
+                                className="bg-green-600 text-white px-4 py-2 rounded-md text-sm hover:bg-green-700 transition-colors">
                                 Approve
                               </button>
                               <button onClick={() => updateGoal(goal.id, 'returned', comment[goal.id])}
-                                className="bg-red-500 text-white px-4 py-2 rounded-lg text-sm hover:bg-red-600">
+                                className="bg-red-500 text-white px-4 py-2 rounded-md text-sm hover:bg-red-600 transition-colors">
                                 Return for rework
                               </button>
                             </div>
@@ -184,13 +217,13 @@ export default function ManagerPage() {
                         )}
 
                         {goal.status === 'approved' && (
-                          <div className="mt-2 pt-2 border-t">
+                          <div className="mt-2 pt-2 border-t border-gray-100">
                             <p className="text-sm text-green-600">Approved and locked</p>
                           </div>
                         )}
 
                         {goal.status === 'returned' && (
-                          <div className="mt-2 pt-2 border-t">
+                          <div className="mt-2 pt-2 border-t border-gray-100">
                             <p className="text-sm text-red-500">Returned for rework</p>
                           </div>
                         )}

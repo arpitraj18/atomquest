@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx tsc *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)",
+      "Bash(git filter-branch *)",
+      "Bash(git stash *)",
+      "Bash(FILTER_BRANCH_SQUELCH_WARNING=1 git filter-branch -f --msg-filter \"python -c \\\\\"import sys; msg=sys.stdin.read\\(\\); print\\('\\\\n'.join\\(l for l in msg.splitlines\\(\\) if not l.startswith\\('Co-Authored-By: Claude'\\)\\).rstrip\\(\\)\\)\\\\\"\" 13548c5..HEAD)"
+    ]
+  }
+}

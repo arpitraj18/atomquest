@@ -38,11 +38,11 @@ export default function DashboardPage() {
       <h2 className="text-xl font-semibold text-gray-900 mb-1">
         Welcome, {user.name}
       </h2>
-      <p className="text-gray-500 text-sm mb-8">
-        {user.department} &middot; {user.role}
+      <p className="text-gray-400 text-sm mb-8">
+        {user.department} &middot; <span className="capitalize">{user.role}</span>
       </p>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         {user.role === 'employee' && (
           <>
             <DashCard title="My Goals" desc="View and manage your goal sheet" href="/dashboard/goals" color="blue" />
@@ -67,8 +67,6 @@ export default function DashboardPage() {
             <DashCard title="Escalations" desc="View and manage escalation rules" href="/dashboard/admin/escalations" color="gray" />
           </>
         )}
-
-        
       </div>
     </div>
   )
@@ -82,9 +80,19 @@ function DashCard({ title, desc, href, color }: { title: string, desc: string, h
     gray: 'bg-gray-50 border-gray-200 hover:bg-gray-100',
   }
 
+  const arrowMap: Record<string, string> = {
+    blue: 'text-blue-300 group-hover:text-blue-500',
+    green: 'text-green-300 group-hover:text-green-500',
+    purple: 'text-purple-300 group-hover:text-purple-500',
+    gray: 'text-gray-300 group-hover:text-gray-500',
+  }
+
   return (
-    <a href={href} className={'block border rounded-xl p-5 transition-colors ' + (colorMap[color] || colorMap.gray)}>
-      <h3 className="font-medium text-gray-900 mb-1">{title}</h3>
+    <a href={href} className={'block border rounded-lg p-5 transition-all group ' + (colorMap[color] || colorMap.gray)}>
+      <div className="flex items-start justify-between mb-3">
+        <h3 className="font-medium text-gray-900">{title}</h3>
+        <span className={'transition-colors text-sm ' + (arrowMap[color] || arrowMap.gray)}>&rarr;</span>
+      </div>
       <p className="text-sm text-gray-500">{desc}</p>
     </a>
   )

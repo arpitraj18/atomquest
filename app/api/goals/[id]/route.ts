@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-server'
 import { sendGoalApprovedEmail, sendGoalReturnedEmail } from '@/lib/email'
-import { notifyGoalApproved, notifyGoalReturned } from '@/lib/teams'
+import { notifyGoalApproved, notifyGoalReturned, notifyGoalSubmitted } from '@/lib/teams'
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -60,6 +60,11 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     }
   } catch (e) {
     console.error('Notification error:', e)
+  }
+
+  if (updateData.status === 'submitted' && data.employee?.manager_id) {
+    const baseUrl = process.env.NEXTAUTH_URL || 'https://atomquest-indol.vercel.app'
+    notifyGoalSubmitted(data.employee.name, baseUrl).catch(console.error)
   }
 
   return NextResponse.json(data)

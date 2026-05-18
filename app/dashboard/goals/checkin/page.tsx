@@ -116,7 +116,7 @@ export default function EmployeeCheckInPage() {
 
   if (status === 'loading' || loading) return (
     <div className="flex items-center justify-center py-32">
-      <p className="text-gray-400">Loading...</p>
+      <p className="text-gray-400 text-sm">Loading...</p>
     </div>
   )
 
@@ -125,46 +125,45 @@ export default function EmployeeCheckInPage() {
       <div className="border-b bg-white px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <button onClick={() => router.push('/dashboard')}
-            className="text-gray-400 hover:text-gray-600 text-sm">
+            className="text-gray-400 hover:text-gray-600 text-sm transition-colors">
             &larr; Dashboard
           </button>
           <span className="text-gray-300">/</span>
-          <h1 className="text-lg font-semibold">My Check-ins</h1>
+          <h1 className="text-base font-semibold text-gray-900">My Check-ins</h1>
         </div>
         <select value={quarter} onChange={e => setQuarter(e.target.value)}
-          className="border rounded-lg px-3 py-2 text-sm">
+          className="border border-gray-200 rounded px-3 py-2 text-sm">
           {['Q1', 'Q2', 'Q3', 'Q4'].map(q => <option key={q}>{q}</option>)}
         </select>
       </div>
 
       <div className="max-w-4xl mx-auto p-8">
         {goals.length === 0 ? (
-          <div className="text-center py-16 bg-white border rounded-xl">
-            <div className="text-4xl mb-4">📋</div>
+          <div className="text-center py-16 bg-white border border-gray-200 rounded-lg">
             <h3 className="font-medium text-gray-900 mb-2">No approved goals yet</h3>
             <p className="text-sm text-gray-400 mb-4">Goals must be approved by your manager before you can log check-ins.</p>
             <button onClick={() => router.push('/dashboard/goals')}
-              className="text-blue-600 text-sm hover:underline">
-              View my goals →
+              className="text-[#F97316] text-sm hover:underline transition-colors">
+              View my goals &rarr;
             </button>
           </div>
         ) : (
           <div className="space-y-4">
-            <div className="bg-blue-50 border border-blue-200 rounded-xl px-5 py-3 text-sm text-blue-700">
+            <div className="bg-orange-50 border border-orange-100 rounded-lg px-5 py-3 text-sm text-gray-700">
               Logging actuals for <strong>{quarter}</strong> &middot; {goals.length} approved goals
               {activeQuarter && (
-                <span className="ml-2 text-blue-500">&middot; Active window: {activeQuarter}</span>
+                <span className="ml-2 text-gray-400">&middot; Active window: {activeQuarter}</span>
               )}
             </div>
 
             {!windowOpen && activeQuarter && (
-              <div className="bg-yellow-50 border border-yellow-200 rounded-xl px-5 py-3 text-sm text-yellow-700">
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg px-5 py-3 text-sm text-yellow-700">
                 The active check-in window is <strong>{activeQuarter}</strong>. You are viewing {quarter} which is outside the current window. Inputs are disabled.
               </div>
             )}
 
             {!activeQuarter && (
-              <div className="bg-yellow-50 border border-yellow-200 rounded-xl px-5 py-3 text-sm text-yellow-700">
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg px-5 py-3 text-sm text-yellow-700">
                 No check-in window is currently open. Check back when the next quarter begins.
               </div>
             )}
@@ -175,16 +174,16 @@ export default function EmployeeCheckInPage() {
               const score = ci ? Math.round(computeScore(goal.uom_type, goal.target, ci.actual_achievement)) : null
 
               return (
-                <div key={goal.id} className="bg-white border rounded-xl p-5 hover:shadow-sm transition-shadow">
+                <div key={goal.id} className="bg-white border border-gray-200 rounded-lg p-5 hover:shadow-sm transition-shadow">
                   <div className="flex items-start justify-between mb-4">
                     <div>
                       <span className="text-xs text-gray-400 uppercase tracking-wide">{goal.thrust_area}</span>
                       <h3 className="font-medium text-gray-900 mt-0.5">{goal.title}</h3>
-                      <p className="text-sm text-gray-500 mt-0.5">{goal.description}</p>
+                      <p className="text-sm text-gray-400 mt-0.5">{goal.description}</p>
                     </div>
                     <div className="text-right ml-4 flex-shrink-0">
-                      <div className="text-sm text-gray-400">Target</div>
-                      <div className="text-xl font-semibold">{goal.target}</div>
+                      <div className="text-xs text-gray-400">Target</div>
+                      <div className="text-xl font-semibold text-gray-900">{goal.target}</div>
                       <div className="text-xs text-gray-400">{goal.uom_type} &middot; {goal.weightage}%</div>
                     </div>
                   </div>
@@ -194,7 +193,7 @@ export default function EmployeeCheckInPage() {
                       <label className="block text-xs text-gray-500 mb-1">Actual achievement</label>
                       <input type="number" value={inp.actual}
                         onChange={e => setInput(goal.id, 'actual', e.target.value)}
-                        className="w-full border rounded-lg px-3 py-2 text-sm disabled:bg-gray-50 disabled:text-gray-400"
+                        className="w-full border border-gray-200 rounded px-3 py-2 text-sm disabled:bg-gray-50 disabled:text-gray-400"
                         placeholder="Enter actual"
                         disabled={!windowOpen} />
                     </div>
@@ -202,7 +201,7 @@ export default function EmployeeCheckInPage() {
                       <label className="block text-xs text-gray-500 mb-1">Status</label>
                       <select value={inp.status}
                         onChange={e => setInput(goal.id, 'status', e.target.value)}
-                        className="w-full border rounded-lg px-3 py-2 text-sm disabled:bg-gray-50"
+                        className="w-full border border-gray-200 rounded px-3 py-2 text-sm disabled:bg-gray-50"
                         disabled={!windowOpen}>
                         <option value="not_started">Not started</option>
                         <option value="on_track">On track</option>
@@ -214,13 +213,13 @@ export default function EmployeeCheckInPage() {
                         <label className="block text-xs text-gray-500 mb-1">Completion date</label>
                         <input type="date" value={inp.completion_date}
                           onChange={e => setInput(goal.id, 'completion_date', e.target.value)}
-                          className="w-full border rounded-lg px-3 py-2 text-sm"
+                          className="w-full border border-gray-200 rounded px-3 py-2 text-sm"
                           disabled={!windowOpen} />
                       </div>
                     ) : score !== null ? (
                       <div className="flex items-end">
-                        <div className="w-full border rounded-lg px-3 py-2 bg-gray-50">
-                          <div className="text-xs text-gray-500">Progress score</div>
+                        <div className="w-full border border-gray-100 rounded px-3 py-2 bg-gray-50">
+                          <div className="text-xs text-gray-400">Progress score</div>
                           <div className={'text-xl font-semibold ' + (score >= 80 ? 'text-green-600' : score >= 50 ? 'text-yellow-600' : 'text-red-500')}>
                             {score}%
                           </div>
@@ -233,7 +232,7 @@ export default function EmployeeCheckInPage() {
                     <div className="flex items-center gap-3">
                       <button onClick={() => saveCheckIn(goal)}
                         disabled={saving === goal.id || !inp.actual}
-                        className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors">
+                        className="bg-[#F97316] text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-[#EA6C00] disabled:opacity-50 transition-colors">
                         {saving === goal.id ? 'Saving...' : ci ? 'Update check-in' : 'Save check-in'}
                       </button>
                       {ci && (

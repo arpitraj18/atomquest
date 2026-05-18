@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-server'
-import { sendGoalSubmittedEmail } from '@/lib/email'
-import { notifyGoalSubmitted } from '@/lib/teams'
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
@@ -68,23 +66,6 @@ export async function POST(req: NextRequest) {
 
   const { data, error } = await supabaseAdmin.from('goals').insert(toInsert).select()
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-
-  try {
-    if (employee.manager_id) {
-      const { data: manager } = await supabaseAdmin
-        .from('users')
-        .select('*')
-        .eq('id', employee.manager_id)
-        .single()
-
-      if (manager?.email) {
-        await sendGoalSubmittedEmail(manager.email, manager.name, employee.name)
-        await notifyGoalSubmitted(employee.name, 'http://localhost:3000')
-      }
-    }
-  } catch (e) {
-    console.error('Notification error:', e)
-  }
 
   return NextResponse.json(data)
 }

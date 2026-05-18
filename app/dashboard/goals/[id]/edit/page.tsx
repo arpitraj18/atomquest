@@ -1,8 +1,9 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useParams } from 'next/navigation'
 import { useRequireRole } from '@/lib/auth-check'
+import { Toast, useToast } from '@/components/Toast'
 
 const THRUST_AREAS = [
   'Revenue Growth',
@@ -14,14 +15,16 @@ const THRUST_AREAS = [
   'Compliance & Risk',
 ]
 
-export default function NewGoalPage() {
-  const { user, status } = useRequireRole(['employee'])
+export default function EditGoalPage() {
+  const { status } = useRequireRole(['employee'])
   const router = useRouter()
-  const [cycleId, setCycleId] = useState('')
-  const [existingGoals, setExistingGoals] = useState<any[]>([])
+  const params = useParams()
+  const goalId = params.id as string
+  const { toast, showToast, hideToast } = useToast()
+
   const [saving, setSaving] = useState(false)
+  const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [dataLoaded, setDataLoaded] = useState(false)
   const [form, setForm] = useState({
     thrust_area: THRUST_AREAS[0],
     title: '',
@@ -31,54 +34,48 @@ export default function NewGoalPage() {
     weightage: '',
   })
 
-  const userEmail = (user as any)?.email || ''
-
   useEffect(() => {
-    if (status !== 'authenticated' || !userEmail || dataLoaded) return
-    setDataLoaded(true)
-
-    fetch('/api/users?email=' + encodeURIComponent(userEmail))
+    if (status !== 'authenticated') return
+    fetch('/api/goals/' + goalId)
       .then(r => r.json())
-      .then(u => {
-        if (u?.id) {
-          fetch('/api/goals?employee_id=' + u.id)
-            .then(r => r.json())
-            .then(d => setExistingGoals(Array.isArray(d) ? d : []))
+      .then(goal => {
+        if (!goal || goal.status !== 'returned') {
+          router.replace('/dashboard/goals')
+          return
         }
+        setForm({
+          thrust_area: goal.thrust_area || THRUST_AREAS[0],
+          title: goal.title || '',
+          description: goal.description || '',
+          uom_type: goal.uom_type || 'min',
+          target: goal.target?.toString() || '',
+          weightage: goal.weightage?.toString() || '',
+        })
+        setLoading(false)
       })
-
-    fetch('/api/cycles')
-      .then(r => r.json())
-      .then(d => { if (d?.id) setCycleId(d.id) })
-  }, [status, userEmail, dataLoaded])
+      .catch(() => router.replace('/dashboard/goals'))
+  }, [status, goalId, router])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError('')
-
-    if (!userEmail) {
-      setError('Session error — please sign out and sign in again.')
-      return
-    }
 
     if (Number(form.weightage) < 10) {
       setError('Weightage must be at least 10%.')
       return
     }
 
-    if (existingGoals.length >= 8) {
-      setError('You cannot have more than 8 goals.')
-      return
-    }
-
     setSaving(true)
-    const res = await fetch('/api/goals', {
-      method: 'POST',
+    const res = await fetch('/api/goals/' + goalId, {
+      method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        goals: [{ ...form, target: Number(form.target), weightage: Number(form.weightage) }],
-        employee_email: userEmail,
-        cycle_id: cycleId || null,
+        thrust_area: form.thrust_area,
+        title: form.title,
+        description: form.description,
+        uom_type: form.uom_type,
+        target: Number(form.target),
+        weightage: Number(form.weightage),
       }),
     })
     const data = await res.json()
@@ -87,29 +84,29 @@ export default function NewGoalPage() {
       setSaving(false)
       return
     }
-    router.push('/dashboard/goals')
+    showToast('Goal updated successfully!')
+    setTimeout(() => router.push('/dashboard/goals'), 1000)
   }
 
-  const remainingWeight = 100 - existingGoals.reduce((s, g) => s + Number(g.weightage), 0)
-
-  if (status === 'loading') return null
+  if (status === 'loading' || loading) return null
 
   return (
     <div>
+      {toast && <Toast message={toast.message} type={toast.type} onClose={hideToast} />}
+
       <div className="border-b bg-white px-6 py-4 flex items-center gap-3">
         <button onClick={() => router.push('/dashboard/goals')}
           className="text-gray-400 hover:text-gray-600 text-sm transition-colors">
           &larr; My Goals
         </button>
         <span className="text-gray-300">/</span>
-        <h1 className="text-base font-semibold text-gray-900">Add Goal</h1>
+        <h1 className="text-base font-semibold text-gray-900">Edit Goal</h1>
       </div>
 
       <div className="max-w-2xl mx-auto p-8">
         <div className="bg-white border border-gray-200 rounded-lg p-6">
-          <div className="mb-5 p-3 bg-orange-50 border border-orange-100 rounded-lg text-sm text-gray-600 flex items-center justify-between">
-            <span>Goals: {existingGoals.length} / 8 &nbsp;&middot;&nbsp; Remaining weightage: <strong>{remainingWeight}%</strong></span>
-            <span className="text-gray-400 text-xs">{userEmail}</span>
+          <div className="mb-5 p-3 bg-orange-50 border border-orange-100 rounded-lg text-sm text-gray-600">
+            This goal was returned for rework. Update the fields below and save.
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -160,9 +157,7 @@ export default function NewGoalPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Weightage % <span className="text-gray-400 font-normal">(min 10%, remaining: {remainingWeight}%)</span>
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Weightage %</label>
               <input type="number" value={form.weightage}
                 onChange={e => setForm({ ...form, weightage: e.target.value })}
                 className="w-full border border-gray-200 rounded px-3 py-2 text-sm"
@@ -176,9 +171,9 @@ export default function NewGoalPage() {
             )}
 
             <div className="flex gap-3 pt-2">
-              <button type="submit" disabled={saving || !userEmail}
+              <button type="submit" disabled={saving}
                 className="flex-1 bg-[#F97316] text-white rounded-md py-2.5 text-sm font-medium hover:bg-[#EA6C00] disabled:opacity-50 transition-colors">
-                {saving ? 'Saving...' : 'Save goal'}
+                {saving ? 'Saving...' : 'Save changes'}
               </button>
               <button type="button" onClick={() => router.push('/dashboard/goals')}
                 className="flex-1 border border-gray-200 rounded-md py-2.5 text-sm text-gray-600 hover:bg-gray-50 transition-colors">

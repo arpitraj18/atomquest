@@ -67,7 +67,7 @@ export default function CompletionDashboard() {
 
   if (status === 'loading' || loading) return (
     <div className="flex items-center justify-center py-32">
-      <p className="text-gray-400">Loading...</p>
+      <p className="text-gray-400 text-sm">Loading...</p>
     </div>
   )
 
@@ -75,60 +75,60 @@ export default function CompletionDashboard() {
     <div>
       <div className="border-b bg-white px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <button onClick={() => router.push('/dashboard/admin')} className="text-gray-400 hover:text-gray-600 text-sm">
+          <button onClick={() => router.push('/dashboard/admin')} className="text-gray-400 hover:text-gray-600 text-sm transition-colors">
             &larr; Admin
           </button>
           <span className="text-gray-300">/</span>
-          <h1 className="text-lg font-semibold">Completion Dashboard</h1>
+          <h1 className="text-base font-semibold text-gray-900">Completion Dashboard</h1>
         </div>
         <select value={quarter} onChange={e => setQuarter(e.target.value)}
-          className="border rounded-lg px-3 py-2 text-sm">
+          className="border border-gray-200 rounded px-3 py-2 text-sm">
           {['Q1', 'Q2', 'Q3', 'Q4'].map(q => <option key={q}>{q}</option>)}
         </select>
       </div>
 
       <div className="max-w-5xl mx-auto p-8">
         <div className="grid grid-cols-4 gap-4 mb-8">
-          <div className="bg-white border rounded-xl p-4">
-            <div className="text-sm text-gray-500 mb-1">Employees done</div>
+          <div className="bg-white border border-gray-200 rounded-lg p-4">
+            <div className="text-xs text-gray-400 mb-1 uppercase tracking-wide">Employees done</div>
             <div className="text-2xl font-semibold text-green-600">{employeeDone} / {employees.length}</div>
           </div>
-          <div className="bg-white border rounded-xl p-4">
-            <div className="text-sm text-gray-500 mb-1">Managers done</div>
-            <div className="text-2xl font-semibold text-blue-600">{managerDone} / {managers.length}</div>
+          <div className="bg-white border border-gray-200 rounded-lg p-4">
+            <div className="text-xs text-gray-400 mb-1 uppercase tracking-wide">Managers done</div>
+            <div className="text-2xl font-semibold text-[#F97316]">{managerDone} / {managers.length}</div>
           </div>
-          <div className="bg-white border rounded-xl p-4">
-            <div className="text-sm text-gray-500 mb-1">Employee completion</div>
-            <div className="text-2xl font-semibold">
+          <div className="bg-white border border-gray-200 rounded-lg p-4">
+            <div className="text-xs text-gray-400 mb-1 uppercase tracking-wide">Employee completion</div>
+            <div className="text-2xl font-semibold text-gray-900">
               {employees.length > 0 ? Math.round((employeeDone / employees.length) * 100) : 0}%
             </div>
           </div>
-          <div className="bg-white border rounded-xl p-4">
-            <div className="text-sm text-gray-500 mb-1">Quarter</div>
-            <div className="text-2xl font-semibold">{quarter}</div>
+          <div className="bg-white border border-gray-200 rounded-lg p-4">
+            <div className="text-xs text-gray-400 mb-1 uppercase tracking-wide">Quarter</div>
+            <div className="text-2xl font-semibold text-gray-900">{quarter}</div>
           </div>
         </div>
 
         <div className="grid grid-cols-2 gap-6">
-          <div className="bg-white border rounded-xl overflow-hidden">
-            <div className="px-5 py-3 border-b bg-gray-50">
-              <h2 className="font-medium text-gray-900">Employee check-ins</h2>
+          <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+            <div className="px-5 py-3 border-b border-gray-100 bg-gray-50">
+              <h2 className="font-medium text-gray-900 text-sm">Employee check-ins</h2>
             </div>
             <table className="w-full text-sm">
-              <thead className="border-b">
+              <thead className="border-b border-gray-100">
                 <tr>
-                  <th className="text-left px-4 py-2 text-gray-500 font-medium">Employee</th>
-                  <th className="text-left px-4 py-2 text-gray-500 font-medium">Department</th>
-                  <th className="text-left px-4 py-2 text-gray-500 font-medium">{quarter} status</th>
+                  <th className="text-left px-4 py-2 text-gray-400 font-medium text-xs uppercase tracking-wide">Employee</th>
+                  <th className="text-left px-4 py-2 text-gray-400 font-medium text-xs uppercase tracking-wide">Department</th>
+                  <th className="text-left px-4 py-2 text-gray-400 font-medium text-xs uppercase tracking-wide">{quarter}</th>
                 </tr>
               </thead>
-              <tbody className="divide-y">
+              <tbody className="divide-y divide-gray-100">
                 {employees.map(u => {
                   const s = employeeCheckInStatus(u.id, quarter)
                   return (
-                    <tr key={u.id} className="hover:bg-gray-50">
-                      <td className="px-4 py-3 font-medium">{u.name}</td>
-                      <td className="px-4 py-3 text-gray-500">{u.department}</td>
+                    <tr key={u.id} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-4 py-3 font-medium text-gray-900">{u.name}</td>
+                      <td className="px-4 py-3 text-gray-400">{u.department}</td>
                       <td className="px-4 py-3">
                         <span className={'text-xs px-2 py-1 rounded-full ' + statusBadge(s)}>
                           {statusLabel(s)}
@@ -141,25 +141,25 @@ export default function CompletionDashboard() {
             </table>
           </div>
 
-          <div className="bg-white border rounded-xl overflow-hidden">
-            <div className="px-5 py-3 border-b bg-gray-50">
-              <h2 className="font-medium text-gray-900">Manager check-ins</h2>
+          <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+            <div className="px-5 py-3 border-b border-gray-100 bg-gray-50">
+              <h2 className="font-medium text-gray-900 text-sm">Manager check-ins</h2>
             </div>
             <table className="w-full text-sm">
-              <thead className="border-b">
+              <thead className="border-b border-gray-100">
                 <tr>
-                  <th className="text-left px-4 py-2 text-gray-500 font-medium">Manager</th>
-                  <th className="text-left px-4 py-2 text-gray-500 font-medium">Department</th>
-                  <th className="text-left px-4 py-2 text-gray-500 font-medium">{quarter} status</th>
+                  <th className="text-left px-4 py-2 text-gray-400 font-medium text-xs uppercase tracking-wide">Manager</th>
+                  <th className="text-left px-4 py-2 text-gray-400 font-medium text-xs uppercase tracking-wide">Department</th>
+                  <th className="text-left px-4 py-2 text-gray-400 font-medium text-xs uppercase tracking-wide">{quarter}</th>
                 </tr>
               </thead>
-              <tbody className="divide-y">
+              <tbody className="divide-y divide-gray-100">
                 {managers.map(u => {
                   const s = managerCheckInStatus(u.id, quarter)
                   return (
-                    <tr key={u.id} className="hover:bg-gray-50">
-                      <td className="px-4 py-3 font-medium">{u.name}</td>
-                      <td className="px-4 py-3 text-gray-500">{u.department}</td>
+                    <tr key={u.id} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-4 py-3 font-medium text-gray-900">{u.name}</td>
+                      <td className="px-4 py-3 text-gray-400">{u.department}</td>
                       <td className="px-4 py-3">
                         <span className={'text-xs px-2 py-1 rounded-full ' + statusBadge(s)}>
                           {statusLabel(s)}

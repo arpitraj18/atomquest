@@ -12,7 +12,7 @@ export const authOptions: NextAuthOptions = {
         password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials) {
-        if (!credentials?.email) return null
+        if (!credentials?.email || !credentials?.password) return null
 
         const { data: user, error } = await supabaseAdmin
           .from('users')
@@ -21,6 +21,14 @@ export const authOptions: NextAuthOptions = {
           .single()
 
         if (error || !user) return null
+
+        const rolePasswords: Record<string, string> = {
+          employee: 'employee@atomberg',
+          manager: 'manager@atomberg',
+          admin: 'admin@atomberg',
+        }
+
+        if (credentials.password !== rolePasswords[user.role]) return null
 
         return {
           id: user.id,
